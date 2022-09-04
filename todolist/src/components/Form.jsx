@@ -1,6 +1,7 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import AlertError from "./AlertError";
 
-const Form = ({ tareas, setTareas }) => {
+const Form = ({ tareas, setTareas, tarea, setTarea }) => {
   
 const [titulo, setTitulo] = useState("");  
 const [fecha, setFecha] = useState("");  
@@ -8,6 +9,21 @@ const [descripcion, setDescripcion] = useState("");
 
 const [error, setError] = useState(false);
 
+useEffect( () => {
+  if(Object.keys(tarea).length > 0){
+    setTitulo(tarea.titulo);
+    setFecha(tarea.fecha);
+    setDescripcion(tarea.descripcion);
+  }
+
+}, [tarea])
+
+
+
+const generarId = () => {
+  const id = Math.random().toString(20).substring(2);
+  return id
+}
 const handleSubmit = (e) => {
   e.preventDefault();
 
@@ -23,10 +39,21 @@ const handleSubmit = (e) => {
   const objetoTareas = {
     titulo,
     fecha,
-    descripcion
-  }
+    descripcion,
+  };
 
-  setTareas([...tareas, objetoTareas]);
+  if(tarea.id){
+
+    objetoTareas.id = tarea.id;
+    const tareasActualizadas = tareas.map(tareaState => tareaState.id === tarea.id ? objetoTareas : tareaState);
+
+    setTareas(tareasActualizadas);
+    setTarea({});
+
+  } else {
+    objetoTareas.id = generarId();
+    setTareas([...tareas, objetoTareas]);
+  }
 
   setTitulo("");
   setFecha("");
@@ -42,10 +69,7 @@ const handleSubmit = (e) => {
       onSubmit={handleSubmit} 
       className="bg-white shadow-md rounded-lg py-10 px-5 mb-10">
 
-        {error && (
-        <div className="bg-red-600 font-bold uppercase text-center text-white p-3 mb-5 rounded-md">
-          <p>Faltan campos por diligenciar</p>
-          </div>)}
+        {error && <AlertError mensaje="Faltan campos por diligenciar"/>}
         <div className="mb-5">
           <label htmlFor="titulo" className="block text-gray-700 uppercase font-bold">Título
           </label>
@@ -84,11 +108,20 @@ const handleSubmit = (e) => {
           onChange={ (e) => setDescripcion(e.target.value) }
           />
         </div>
-        <input 
+        {!tarea.id ? (
+          <input 
+          type="submit" 
+          className="bg-green-700 w-full p-3 text-white font-bold uppercase rounded-md cursor-pointer hover:bg-green-800 transition-colors"
+          value="Crear Tarea"
+          />
+        ) : (
+          <input 
         type="submit" 
-        className="bg-green-700 w-full p-3 text-white font-bold uppercase rounded-md cursor-pointer hover:bg-green-800 transition-colors"
-        value="Crear Tarea"
+        className="bg-purple-700 w-full p-3 text-white font-bold uppercase rounded-md cursor-pointer hover:bg-purple-800 transition-colors"
+        value="Actualizar Tarea"
         />
+
+        )}
       </form>
     </div>
   )
